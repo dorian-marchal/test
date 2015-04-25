@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/dorian-marchal/test/issues"
   },
-  "homepage": "https://github.com/dorian-marchal/test"
+  "homepage": "https://github.com/dorian-marchal/test",
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-util": "^3.0.4"
+  }
 }
