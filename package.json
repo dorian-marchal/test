@@ -17,7 +17,10 @@
   },
   "homepage": "https://github.com/dorian-marchal/test",
   "devDependencies": {
+    "connect-livereload": "^0.5.3",
+    "express": "^4.12.3",
     "gulp": "^3.8.11",
-    "gulp-util": "^3.0.4"
+    "gulp-util": "^3.0.4",
+    "tiny-lr": "^0.1.5"
   }
 }
