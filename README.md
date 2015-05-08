@@ -1,4 +1,4 @@
 test
 ====
 
-Dépôt utilisé pour faire des tests de toute sorte
+Socle de base pour faire de simples tests
