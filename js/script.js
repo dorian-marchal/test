@@ -1,8 +1,3 @@
-(function () {
-    'use strict';
-
-    $(function () {
-
-    });
-    
-})();
+exports.getN = function (n) {
+    return n;
+};

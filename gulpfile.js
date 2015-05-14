@@ -28,6 +28,10 @@
 var tinylr;
 
 var gulp  = require('gulp');
+var jasmine = require('gulp-jasmine');
+var plumber = require('gulp-plumber');
+var notify = require('gulp-notify');
+var notifier = require('node-notifier');
 
 // Liste des chemins à observer  depuis la racine du projet (css/html/images/...)
 var paths = [
@@ -58,4 +62,32 @@ gulp.task('watch', function() {
     for (var i in paths) {
         gulp.watch(paths[i], notifyLiveReload);
     }
+});
+
+// Jasmine
+gulp.task('test', function () {
+
+    var error = false;
+
+    return gulp.src(['./test/script.spec.js', './js/script.js'])
+        .pipe(plumber())
+        .pipe(jasmine({
+            verbose: true,
+        }))
+        .on('error', notify.onError(function () {
+            error = true;
+            return {
+                title: 'Jasmine Test Failed',
+                message: 'One or more tests failed, see the cli for details.',
+            };
+        }))
+        .on('end', function () {
+            if (!error) {
+                notifier.notify({
+                    title: 'Jasmine Test Success',
+                    message: 'Every tests passed :)',
+                });
+            }
+        })
+    ;
 });
