@@ -1,14 +1,14 @@
 const _ = require('lodash');
 const Koa = require('koa');
 const Router = require('koa-router');
+const cors = require('koa-cors');
 const bodyParser = require('koa-bodyparser');
 const app = new Koa();
-
 const router = new Router();
 
 const SERVER_PORT = 3000;
 
-const items = [];
+const items = ['Citron', 'Lait', 'Oeuf'];
 router
   .get('/items', async (ctx, next) => {
     ctx.body = items;
@@ -42,6 +42,7 @@ router
   });
 
 app
+  .use(cors())
   .use(async (ctx, next) => {
     const { method, url } = ctx.request;
     console.log('\n');

@@ -1,11 +1,16 @@
 import './App.css';
 
 import React, { Component } from 'react';
-import { addNewItem, removeItem, updateNewItemLabel } from './actions';
+import { addNewItem, fetchItems, removeItem, updateNewItemLabel } from './actions';
 
 import { connect } from 'react-redux';
 
 class App extends Component {
+  componentDidMount() {
+    const { fetchItems } = this.props;
+    fetchItems();
+  }
+
   render() {
     const { items, newItemLabel, addNewItem, removeItem, updateNewItemLabel } = this.props;
     return (
@@ -33,4 +38,4 @@ class App extends Component {
   }
 }
 
-export default connect(state => state, { addNewItem, removeItem, updateNewItemLabel })(App);
+export default connect(state => state, { addNewItem, removeItem, updateNewItemLabel, fetchItems })(App);
