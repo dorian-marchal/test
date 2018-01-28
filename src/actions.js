@@ -1,20 +1,79 @@
-// @FIXME mutualize type.
-const addNewItem = () => ({ type: 'ADD_NEW_ITEM' });
-const removeItem = index => ({ type: 'REMOVE_ITEM', index });
-const updateNewItemLabel = newItemLabel => ({ type: 'UPDATE_NEW_ITEM_LABEL', newItemLabel });
-const requestItems = () => ({ type: 'REQUEST_ITEMS' });
-const receiveItems = items => ({ type: 'RECEIVE_ITEMS', items });
+const serverBaseUrl = 'http://localhost:3001';
 
-// cf https://redux.js.org/docs/advanced/AsyncActions.html
-function fetchItems() {
-  return async function(dispatch) {
-    dispatch(requestItems());
+// @FIXME Replace with https://github.com/reduxactions/redux-actions
+const action = (type, makeParams = () => null) => {
+  const action = (...args) => ({ type, ...makeParams(...args) });
+  action.type = type;
+  return action;
+};
 
-    const response = await fetch(`http://localhost:3000/items`);
-    const items = await response.json();
+const httpAction = (method, path, makeParams = () => {}) => {
+  const request = action(`REQUEST ${path}`);
+  const receive = action(`RECEIVE ${path}`, (responseBody, requestBody) => ({
+    response: responseBody,
+    request: requestBody,
+  }));
+  const fail = action(`FAIL ${path}`);
 
-    dispatch(receiveItems(items));
+  // @FIXME Improve shape.
+  return {
+    request,
+    receive,
+    fail,
+    fetch: (...args) =>
+      // cf https://redux.js.org/docs/advanced/AsyncActions.html
+      async function(dispatch) {
+        dispatch(request());
+
+        // @FIXME More generic, support post request.
+        const requestBody = makeParams(...args);
+        let responseBody = undefined;
+        try {
+          const response = await fetch(`${serverBaseUrl}${path}`, {
+            method,
+            body: method === 'POST' ? JSON.stringify(requestBody) : undefined,
+            headers: { 'Content-Type': 'application/json' },
+          });
+          if (response.status < 300) {
+            // @FIXME only when content type is json.
+            if (response.headers.get('Content-Type').match(/application\/json/)) {
+              responseBody = await response.json();
+            } else {
+              responseBody = await response.text();
+            }
+          } else {
+            throw response;
+          }
+        } catch (e) {
+          dispatch(fail());
+          console.error(e);
+          return;
+        }
+
+        // @FIXME Doesn't always receive something.
+        // @FIXME What if I want to receive something else ?
+        // @FIXME This looks weird.
+        dispatch(receive(responseBody, requestBody));
+      },
   };
-}
+};
 
-export { addNewItem, removeItem, updateNewItemLabel, fetchItems };
+const updateItemInput = action('UPDATE_ITEM_INPUT', input => ({ input }));
+
+const http = {
+  getItems: httpAction('GET', '/items'),
+  addItem: httpAction('POST', '/items/add', item => ({ item })),
+  removeItem: httpAction('POST', '/items/remove', index => ({ index })),
+};
+
+const submitItem = () => (dispatch, getState) => {
+  const { itemInput } = getState();
+  console.log(itemInput);
+  if (itemInput === '') {
+    return;
+  }
+
+  dispatch(http.addItem.fetch(itemInput));
+};
+
+export { submitItem, updateItemInput, http };

@@ -19,6 +19,7 @@
 
 ## Maybe?
 
+* [x] Time travel redux
 * [ ] Redux Saga
 * [ ] React Router
 * [ ] Desktop version
@@ -40,3 +41,8 @@
 * [ ] Feature: Find items by recipe
 * [ ] Feature: List popular recipe
 * [ ] Feature: Offline mode + sync
+
+## Links
+
+Redux Ecosystem Links: https://github.com/markerikson/redux-ecosystem-links
+React Redux Links: https://github.com/markerikson/react-redux-links

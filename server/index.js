@@ -6,7 +6,7 @@ const bodyParser = require('koa-bodyparser');
 const app = new Koa();
 const router = new Router();
 
-const SERVER_PORT = 3000;
+const SERVER_PORT = 3001;
 
 const items = ['Citron', 'Lait', 'Oeuf'];
 router
@@ -36,14 +36,22 @@ router
       console.log(`Removed item at index ${index}`);
     } else {
       ctx.status = 400;
-      ctx.body = { error: `\`index\` parameter (${index}) not found or not in range [0, ${items.length}].` };
+      ctx.body = {
+        error: `\`index\` parameter (${index}) not found or not in range [0, ${items.length}].`,
+      };
     }
     await next();
   });
 
-app
-  .use(cors())
-  .use(async (ctx, next) => {
+function delay(delayMs) {
+  return async (ctx, next) => {
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+    await next();
+  };
+}
+
+function log() {
+  return async (ctx, next) => {
     const { method, url } = ctx.request;
     console.log('\n');
     console.log('―――――');
@@ -51,8 +59,14 @@ app
     await next();
     const { status, message } = ctx.response;
     console.log(`――――― ${status} ${message}`);
-  })
+  };
+}
+
+app
+  .use(cors())
+  .use(delay(300))
   .use(bodyParser())
+  .use(log())
   .use(router.routes());
 
 app.listen(SERVER_PORT, () => console.log(`Listening on port ${SERVER_PORT}...`));

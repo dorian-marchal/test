@@ -1,18 +1,22 @@
 import './App.css';
 
 import React, { Component } from 'react';
-import { addNewItem, fetchItems, removeItem, updateNewItemLabel } from './actions';
+import { http, submitItem, updateItemInput } from './actions';
 
 import { connect } from 'react-redux';
 
+const { getItems, removeItem } = http;
+
 class App extends Component {
   componentDidMount() {
+    console.log(this.props);
     const { fetchItems } = this.props;
     fetchItems();
   }
 
   render() {
-    const { items, newItemLabel, addNewItem, removeItem, updateNewItemLabel } = this.props;
+    const { items, itemInput, removeItem, submitItem, updateItemInput } = this.props;
+    // @FIXME disable buttons on click.
     return (
       <div className="App">
         {items.length === 0 ? "There's no item in the list, please add one. :)" : ''}
@@ -27,10 +31,10 @@ class App extends Component {
         <form
           onSubmit={e => {
             e.preventDefault();
-            addNewItem();
+            submitItem();
           }}
         >
-          <input value={newItemLabel} type="text" onChange={e => updateNewItemLabel(e.target.value)} />
+          <input value={itemInput} type="text" onChange={e => updateItemInput(e.target.value)} />
           <input type="submit" value="Add" />
         </form>
       </div>
@@ -38,4 +42,9 @@ class App extends Component {
   }
 }
 
-export default connect(state => state, { addNewItem, removeItem, updateNewItemLabel, fetchItems })(App);
+export default connect(state => state, {
+  updateItemInput,
+  submitItem,
+  removeItem: removeItem.fetch,
+  fetchItems: getItems.fetch,
+})(App);
