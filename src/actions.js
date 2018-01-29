@@ -1,19 +1,14 @@
+import { createAction } from 'redux-actions';
+
 const serverBaseUrl = 'http://localhost:3001';
 
-// @FIXME Replace with https://github.com/reduxactions/redux-actions
-const action = (type, makeParams = () => null) => {
-  const action = (...args) => ({ type, ...makeParams(...args) });
-  action.type = type;
-  return action;
-};
-
 const httpAction = (method, path, makeParams = () => {}) => {
-  const request = action(`REQUEST ${path}`);
-  const receive = action(`RECEIVE ${path}`, (responseBody, requestBody) => ({
+  const request = createAction(`REQUEST ${path}`);
+  const receive = createAction(`RECEIVE ${path}`, (responseBody, requestBody) => ({
     response: responseBody,
     request: requestBody,
   }));
-  const fail = action(`FAIL ${path}`);
+  const fail = createAction(`FAIL ${path}`);
 
   // @FIXME Improve shape.
   return {
@@ -58,7 +53,7 @@ const httpAction = (method, path, makeParams = () => {}) => {
   };
 };
 
-const updateItemInput = action('UPDATE_ITEM_INPUT', input => ({ input }));
+const updateItemInput = createAction('UPDATE_ITEM_INPUT', input => ({ input }));
 
 const http = {
   getItems: httpAction('GET', '/items'),
