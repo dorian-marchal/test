@@ -6,6 +6,8 @@
   "dependencies": {
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
+    "koa-cors": "^0.0.16",
+    "koa-router": "^7.3.0",
     "lodash": "^4.17.4",
     "prettier": "^1.10.2"
   }

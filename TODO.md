@@ -3,7 +3,7 @@
 * [x] List of items (add / remove) from state
 * [x] With redux (dummy state)
 * [x] Create dummy koa server
-* [ ] From dummy server with redux
+* [x] From dummy server with redux
 
 ## What else?
 
@@ -11,11 +11,13 @@
 * [ ] Server install task
 * [ ] Replace Readme
 * [ ] Maybe add some test ? /shrug
-* [ ] Lint task (eslint/prettier)
-* [ ] HTTPS
-* [ ] Reverse proxy
+* [x] ESlint / Prettier
+* [ ] Lint task
 * [ ] Improve UX
 * [ ] Auth (Use Googe Auth?)
+* [ ] Deploy
+  * [ ] HTTPS
+  * [ ] Reverse proxy
 
 ## Maybe?
 
