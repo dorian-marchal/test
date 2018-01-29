@@ -9,7 +9,6 @@ const { getItems, removeItem } = http;
 
 class App extends Component {
   componentDidMount() {
-    console.log(this.props);
     const { fetchItems } = this.props;
     fetchItems();
   }

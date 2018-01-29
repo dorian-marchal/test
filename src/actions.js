@@ -1,4 +1,5 @@
 import { createAction } from 'redux-actions';
+import logger from './logger';
 
 const serverBaseUrl = 'http://localhost:3001';
 
@@ -41,7 +42,7 @@ const httpAction = (method, path, makeParams = () => {}) => {
           }
         } catch (e) {
           dispatch(fail());
-          console.error(e);
+          logger.error(e);
           return;
         }
 
@@ -63,7 +64,6 @@ const http = {
 
 const submitItem = () => (dispatch, getState) => {
   const { itemInput } = getState();
-  console.log(itemInput);
   if (itemInput === '') {
     return;
   }
