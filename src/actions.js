@@ -3,23 +3,23 @@ import logger from './logger';
 
 const serverBaseUrl = 'http://localhost:3001';
 
-const httpAction = (method, path, makeParams = () => {}) => {
-  const request = createAction(`REQUEST ${path}`);
-  const receive = createAction(`RECEIVE ${path}`, (responseBody, requestBody) => ({
+// @FIXME What a mess. Maybe redux-saga can help me?
+const createFetchAction = (method, path, makeParams = () => {}) => {
+  const type = `${method} ${path}`;
+  // @FIXME Oh dear, please rename me.
+  const _fetch = createAction(type, (status, responseBody, requestBody) => ({
+    status,
     response: responseBody,
     request: requestBody,
   }));
-  const fail = createAction(`FAIL ${path}`);
 
   // @FIXME Improve shape.
   return {
-    request,
-    receive,
-    fail,
+    _fetch,
     fetch: (...args) =>
       // cf https://redux.js.org/docs/advanced/AsyncActions.html
       async function(dispatch) {
-        dispatch(request());
+        dispatch(_fetch('pending'));
 
         // @FIXME More generic, support post request.
         const requestBody = makeParams(...args);
@@ -31,7 +31,7 @@ const httpAction = (method, path, makeParams = () => {}) => {
             headers: { 'Content-Type': 'application/json' },
           });
           if (response.status < 300) {
-            // @FIXME only when content type is json.
+            // @FIXME How to handle this?
             if (response.headers.get('Content-Type').match(/application\/json/)) {
               responseBody = await response.json();
             } else {
@@ -41,25 +41,25 @@ const httpAction = (method, path, makeParams = () => {}) => {
             throw response;
           }
         } catch (e) {
-          dispatch(fail());
+          dispatch(_fetch(e));
           logger.error(e);
           return;
         }
 
         // @FIXME Doesn't always receive something.
-        // @FIXME What if I want to receive something else ?
-        // @FIXME This looks weird.
-        dispatch(receive(responseBody, requestBody));
+        // @FIXME What if I want to receive something else?
+        // @FIXME This looks weird...
+        dispatch(_fetch('success', responseBody, requestBody));
       },
   };
 };
 
-const updateItemInput = createAction('UPDATE_ITEM_INPUT', input => ({ input }));
+const updateItemInput = createAction('UPDATE_ITEM_INPUT', (input) => ({ input }));
 
 const http = {
-  getItems: httpAction('GET', '/items'),
-  addItem: httpAction('POST', '/items/add', item => ({ item })),
-  removeItem: httpAction('POST', '/items/remove', index => ({ index })),
+  getItems: createFetchAction('GET', '/items'),
+  addItem: createFetchAction('POST', '/items/add', (item) => ({ item })),
+  removeItem: createFetchAction('POST', '/items/remove', (index) => ({ index })),
 };
 
 const submitItem = () => (dispatch, getState) => {

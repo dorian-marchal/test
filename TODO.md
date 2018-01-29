@@ -1,5 +1,6 @@
 ## What's next?
 
+* [ ] Clean all fixmes
 * [x] List of items (add / remove) from state
 * [x] With redux (dummy state)
 * [x] Create dummy koa server
