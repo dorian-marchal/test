@@ -20,5 +20,6 @@ module.exports = {
     semi: ['error', 'always'],
     'react/jsx-uses-react': 1,
     'react/jsx-uses-vars': 1,
+    'arrow-body-style': ['error', 'as-needed'],
   },
 };

@@ -10,12 +10,14 @@
 
 * [ ] pg server
 * [ ] Server install task
-* [ ] Replace Readme
+* [x] Replace Readme
 * [ ] Maybe add some test ? /shrug
 * [x] ESlint / Prettier
 * [ ] Lint task
 * [ ] Improve UX
 * [ ] Auth (Use Googe Auth?)
+* [ ] Multiple pages
+* [ ] Change favicon / manifest / package.json
 * [ ] Deploy
   * [ ] HTTPS
   * [ ] Reverse proxy

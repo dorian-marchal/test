@@ -1,31 +1,29 @@
-import { createAction } from 'redux-actions';
+import { createAction, createActions } from 'redux-actions';
+
+import _ from 'lodash';
 import logger from './logger';
 
 const serverBaseUrl = 'http://localhost:3001';
 
-// @FIXME What a mess. Maybe redux-saga can help me?
-const createFetchActions = (type, method, path, makeParams = () => {}) => {
-  // @FIXME Oh dear, please rename me.
-  const pending = createAction(`${type}_PENDING`);
+// @FIXME doc
+const createFetchActions = (type, method, path, makeParams = () => ({})) => {
+  const pending = createAction(`${type}_PENDING`, (requestBody) => ({ request: requestBody }));
   const success = createAction(`${type}_SUCCESS`, (responseBody, requestBody) => ({
     response: responseBody,
     request: requestBody,
   }));
   const error = createAction(`${type}_ERROR`);
 
-  // @FIXME Improve shape.
   return {
-    // @FIXME DRY.
-    [`${type}_PENDING`]: pending,
-    [`${type}_SUCCESS`]: success,
-    [`${type}_ERROR`]: error,
+    [pending]: pending,
+    [success]: success,
+    [error]: error,
     [type]: (...args) =>
-      // cf https://redux.js.org/docs/advanced/AsyncActions.html
       async function(dispatch) {
-        dispatch(pending());
-
-        // @FIXME More generic, support post request.
         const requestBody = makeParams(...args);
+
+        dispatch(pending(requestBody));
+
         let responseBody = undefined;
         try {
           const response = await fetch(`${serverBaseUrl}${path}`, {
@@ -45,7 +43,7 @@ const createFetchActions = (type, method, path, makeParams = () => {}) => {
           }
         } catch (e) {
           dispatch(error(e));
-          logger.error(e);
+          logger.error({ e });
           return;
         }
 
@@ -57,20 +55,24 @@ const createFetchActions = (type, method, path, makeParams = () => {}) => {
   };
 };
 
-const actions = {
-  // @FIXME Use createAction_s_.
-  UPDATE_ITEM_INPUT: createAction('UPDATE_ITEM_INPUT', (input) => ({ input })),
-  SUBMIT_ITEM: () => (dispatch, getState) => {
-    const { itemInput } = getState();
-    if (itemInput === '') {
-      return;
-    }
+const actions = _.mapKeys(
+  {
+    ...createActions({
+      UPDATE_ITEM_INPUT: (input) => ({ input }),
+    }),
+    SUBMIT_ITEM: () => (dispatch, getState) => {
+      const { itemInput, addingItem } = getState();
+      if (addingItem || itemInput === '') {
+        return;
+      }
 
-    dispatch(actions.ADD_ITEM(itemInput));
+      dispatch(actions.addItem(itemInput));
+    },
+    ...createFetchActions('FETCH_ITEMS', 'GET', '/items'),
+    ...createFetchActions('ADD_ITEM', 'POST', '/items/add', (item) => ({ item })),
+    ...createFetchActions('REMOVE_ITEM', 'POST', '/items/remove', (id) => ({ id })),
   },
-  ...createFetchActions('FETCH_ITEMS', 'GET', '/items'),
-  ...createFetchActions('ADD_ITEM', 'POST', '/items/add', (item) => ({ item })),
-  ...createFetchActions('REMOVE_ITEM', 'POST', '/items/remove', (index) => ({ index })),
-};
+  (action, key) => _.camelCase(key),
+);
 
 export default actions;

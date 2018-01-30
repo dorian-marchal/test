@@ -1,59 +1,68 @@
 import './index.css';
 
+import _ from 'lodash';
 import actions from './actions';
 import { handleActions } from 'redux-actions';
 
 const defaultState = {
   itemInput: '',
-  fetchingItems: false,
+  fetchItemsInProgress: false,
+  addItemInProgress: false,
   // @FIXME dispatch errors with noty.
   errorMessage: null,
   items: [],
 };
 
-// @FIXME Use combineReducers https://redux.js.org/docs/api/combineReducers.html
-// @FIXME Global access.
-// @FIXME Move reducer and action same place
-// @FIXME Test errors.
 const reducer = handleActions(
   {
-    [actions.FETCH_ITEMS_PENDING]: (state) => ({
+    [actions.fetchItemsPending]: (state) => ({
       ...state,
-      fetchingItems: true,
+      fetchItemsInProgress: true,
     }),
-    [actions.FETCH_ITEMS_SUCCESS]: (state, { payload }) => ({
+    [actions.fetchItemsSuccess]: (state, { payload }) => ({
       ...state,
-      fetchingItems: false,
+      fetchItemsInProgress: false,
       // @FIXME validate response in action creator.
       items: payload.response,
     }),
-    [actions.FETCH_ITEMS_ERROR]: (state) => ({
+    [actions.fetchItemsError]: (state) => ({
       ...state,
-      fetchingItems: false,
-      errorMessage: 'Erreur de chargement',
+      fetchItemsInProgress: false,
+      errorMessage: 'Impossible de récupérer les produits.',
     }),
     // @FIXME
-    [actions.ADD_ITEM_PENDING]: (state) => state,
-    [actions.ADD_ITEM_SUCCESS]: (state, { payload }) => ({
+    [actions.addItemPending]: (state) => ({
+      ...state,
+      addItemInProgress: true,
+    }),
+    [actions.addItemSuccess]: (state, { payload }) => ({
       ...state,
       itemInput: '',
-      items: [...state.items, payload.request.item],
+      addItemInProgress: false,
+      // @FIXME validate in creator.
+      items: [...state.items, payload.response],
     }),
-    [actions.ADD_ITEM_ERROR]: (state) => ({
+    [actions.addItemError]: (state) => ({
       ...state,
-      errorMessage: "Erreur d'ajout",
+      addItemInProgress: false,
+      errorMessage: "Le produit n'a pas été ajouté.",
     }),
     // @FIXME
-    [actions.REMOVE_ITEM_PENDING]: (state) => state,
-    [actions.REMOVE_ITEM_SUCCESS]: (state, { payload }) => ({
+    [actions.removeItemPending]: (state, { payload }) => ({
       ...state,
-      items: state.items.filter((_, index) => index !== payload.request.index),
+      items: state.items.map(
+        (item) => (item.id === payload.request.id ? { ...item, removingInProgress: true } : item),
+      ),
     }),
-    [actions.REMOVE_ITEM_ERROR]: (state) => ({
+    [actions.removeItemSuccess]: (state, { payload }) => ({
       ...state,
-      errorMessage: 'Erreur de suppression',
+      items: _.reject(state.items, (item) => item.id === payload.request.id),
     }),
-    [actions.UPDATE_ITEM_INPUT]: (state, { payload }) => ({
+    [actions.removeItemError]: (state) => ({
+      ...state,
+      errorMessage: "Le produit n'a pas été supprimé.",
+    }),
+    [actions.updateItemInput]: (state, { payload }) => ({
       ...state,
       itemInput: payload.input,
     }),

@@ -10,7 +10,13 @@ const SERVER_PORT = 3001;
 
 const { log } = console;
 
-const items = ['Citron', 'Lait', 'Oeuf'];
+const nextId = () => parseInt(_.uniqueId(), 10);
+
+let items = [
+  { id: nextId(), name: 'Citron' },
+  { id: nextId(), name: 'Lait' },
+  { id: nextId(), name: 'Oeuf' },
+];
 router
   .get('/items', async (ctx, next) => {
     ctx.body = items;
@@ -20,8 +26,9 @@ router
   .post('/items/add', async (ctx, next) => {
     const { item } = ctx.request.body;
     if (_.isString(item)) {
-      items.push(item);
-      ctx.status = 200;
+      const newItem = { id: nextId(), name: item };
+      items = [...items, newItem];
+      ctx.body = newItem;
       log(`Added item '${item}'`);
     } else {
       ctx.status = 400;
@@ -31,15 +38,16 @@ router
   })
 
   .post('/items/remove', async (ctx, next) => {
-    const { index } = ctx.request.body;
-    if (_.inRange(index, 0, items.length)) {
-      items.splice(index, 1);
+    const { id } = ctx.request.body;
+    const itemToRemove = _.find(items, (item) => item.id === id);
+    if (itemToRemove) {
+      items = _.reject(items, (item) => item === itemToRemove);
       ctx.status = 200;
-      log(`Removed item at index ${index}`);
+      log(`Removed item n°${id}`);
     } else {
       ctx.status = 400;
       ctx.body = {
-        error: `\`index\` parameter (${index}) not found or not in range [0, ${items.length}].`,
+        error: `No item for ID ${id}`,
       };
     }
     await next();
@@ -47,7 +55,7 @@ router
 
 function delay(delayMs) {
   return async (ctx, next) => {
-    await new Promise(resolve => setTimeout(resolve, delayMs));
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
     await next();
   };
 }
