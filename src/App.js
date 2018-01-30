@@ -1,11 +1,9 @@
 import './App.css';
 
 import React, { Component } from 'react';
-import { http, submitItem, updateItemInput } from './actions';
 
+import actions from './actions';
 import { connect } from 'react-redux';
-
-const { getItems, removeItem } = http;
 
 class App extends Component {
   componentDidMount() {
@@ -14,7 +12,7 @@ class App extends Component {
   }
 
   render() {
-    const { items, itemInput, removeItem, submitItem, updateItemInput } = this.props;
+    const { items, itemInput, removeItem, onSubmitItem, onInputChange } = this.props;
     // @FIXME disable buttons on click.
     return (
       <div className="App">
@@ -28,12 +26,12 @@ class App extends Component {
           ))}
         </ul>
         <form
-          onSubmit={e => {
+          onSubmit={(e) => {
             e.preventDefault();
-            submitItem();
+            onSubmitItem();
           }}
         >
-          <input value={itemInput} type="text" onChange={e => updateItemInput(e.target.value)} />
+          <input value={itemInput} type="text" onChange={(e) => onInputChange(e.target.value)} />
           <input type="submit" value="Add" />
         </form>
       </div>
@@ -41,9 +39,9 @@ class App extends Component {
   }
 }
 
-export default connect(state => state, {
-  updateItemInput,
-  submitItem,
-  removeItem: removeItem.fetch,
-  fetchItems: getItems.fetch,
+export default connect((state) => state, {
+  onInputChange: actions.UPDATE_ITEM_INPUT,
+  onSubmitItem: actions.SUBMIT_ITEM,
+  removeItem: actions.REMOVE_ITEM,
+  fetchItems: actions.FETCH_ITEMS,
 })(App);

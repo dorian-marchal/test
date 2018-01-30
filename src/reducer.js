@@ -1,7 +1,6 @@
 import './index.css';
 
-import * as actions from './actions';
-
+import actions from './actions';
 import { handleActions } from 'redux-actions';
 
 const defaultState = {
@@ -18,33 +17,45 @@ const defaultState = {
 // @FIXME Test errors.
 const reducer = handleActions(
   {
-    [actions.http.getItems._fetch]: (state, { payload }) => ({
+    [actions.FETCH_ITEMS_PENDING]: (state) => ({
       ...state,
-      errorMessage: payload.status === 'error' ? 'Erreur de chargement' : undefined,
-      fetchingItems: payload.status === 'pending',
-      // @FIXME validate response in action creator.
-      items: payload.status === 'success' ? payload.response : state.items,
+      fetchingItems: true,
     }),
-    [actions.http.addItem._fetch]: (state, { payload }) => ({
+    [actions.FETCH_ITEMS_SUCCESS]: (state, { payload }) => ({
       ...state,
-      errorMessage: payload.status === 'error' ? "Erreur d'ajout" : undefined,
-      // @FIXME Add pending state.
+      fetchingItems: false,
       // @FIXME validate response in action creator.
+      items: payload.response,
+    }),
+    [actions.FETCH_ITEMS_ERROR]: (state) => ({
+      ...state,
+      fetchingItems: false,
+      errorMessage: 'Erreur de chargement',
+    }),
+    // @FIXME
+    [actions.ADD_ITEM_PENDING]: (state) => state,
+    [actions.ADD_ITEM_SUCCESS]: (state, { payload }) => ({
+      ...state,
       itemInput: '',
-      items: payload.status === 'success' ? [...state.items, payload.request.item] : state.items,
+      items: [...state.items, payload.request.item],
     }),
-    [actions.http.removeItem._fetch]: (state, { payload }) => ({
+    [actions.ADD_ITEM_ERROR]: (state) => ({
       ...state,
-      errorMessage: payload.status === 'error' ? 'Erreur de suppression' : undefined,
-      // @FIXME Add pending state.
-      items:
-        payload.status === 'success'
-          ? state.items.filter((_, index) => index !== payload.request.index)
-          : state.items,
+      errorMessage: "Erreur d'ajout",
     }),
-    [actions.updateItemInput]: (state, action) => ({
+    // @FIXME
+    [actions.REMOVE_ITEM_PENDING]: (state) => state,
+    [actions.REMOVE_ITEM_SUCCESS]: (state, { payload }) => ({
       ...state,
-      itemInput: action.payload.input,
+      items: state.items.filter((_, index) => index !== payload.request.index),
+    }),
+    [actions.REMOVE_ITEM_ERROR]: (state) => ({
+      ...state,
+      errorMessage: 'Erreur de suppression',
+    }),
+    [actions.UPDATE_ITEM_INPUT]: (state, { payload }) => ({
+      ...state,
+      itemInput: payload.input,
     }),
   },
   defaultState,

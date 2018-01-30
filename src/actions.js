@@ -4,22 +4,25 @@ import logger from './logger';
 const serverBaseUrl = 'http://localhost:3001';
 
 // @FIXME What a mess. Maybe redux-saga can help me?
-const createFetchAction = (method, path, makeParams = () => {}) => {
-  const type = `${method} ${path}`;
+const createFetchActions = (type, method, path, makeParams = () => {}) => {
   // @FIXME Oh dear, please rename me.
-  const _fetch = createAction(type, (status, responseBody, requestBody) => ({
-    status,
+  const pending = createAction(`${type}_PENDING`);
+  const success = createAction(`${type}_SUCCESS`, (responseBody, requestBody) => ({
     response: responseBody,
     request: requestBody,
   }));
+  const error = createAction(`${type}_ERROR`);
 
   // @FIXME Improve shape.
   return {
-    _fetch,
-    fetch: (...args) =>
+    // @FIXME DRY.
+    [`${type}_PENDING`]: pending,
+    [`${type}_SUCCESS`]: success,
+    [`${type}_ERROR`]: error,
+    [type]: (...args) =>
       // cf https://redux.js.org/docs/advanced/AsyncActions.html
       async function(dispatch) {
-        dispatch(_fetch('pending'));
+        dispatch(pending());
 
         // @FIXME More generic, support post request.
         const requestBody = makeParams(...args);
@@ -41,7 +44,7 @@ const createFetchAction = (method, path, makeParams = () => {}) => {
             throw response;
           }
         } catch (e) {
-          dispatch(_fetch(e));
+          dispatch(error(e));
           logger.error(e);
           return;
         }
@@ -49,26 +52,25 @@ const createFetchAction = (method, path, makeParams = () => {}) => {
         // @FIXME Doesn't always receive something.
         // @FIXME What if I want to receive something else?
         // @FIXME This looks weird...
-        dispatch(_fetch('success', responseBody, requestBody));
+        dispatch(success(responseBody, requestBody));
       },
   };
 };
 
-const updateItemInput = createAction('UPDATE_ITEM_INPUT', (input) => ({ input }));
+const actions = {
+  // @FIXME Use createAction_s_.
+  UPDATE_ITEM_INPUT: createAction('UPDATE_ITEM_INPUT', (input) => ({ input })),
+  SUBMIT_ITEM: () => (dispatch, getState) => {
+    const { itemInput } = getState();
+    if (itemInput === '') {
+      return;
+    }
 
-const http = {
-  getItems: createFetchAction('GET', '/items'),
-  addItem: createFetchAction('POST', '/items/add', (item) => ({ item })),
-  removeItem: createFetchAction('POST', '/items/remove', (index) => ({ index })),
+    dispatch(actions.ADD_ITEM(itemInput));
+  },
+  ...createFetchActions('FETCH_ITEMS', 'GET', '/items'),
+  ...createFetchActions('ADD_ITEM', 'POST', '/items/add', (item) => ({ item })),
+  ...createFetchActions('REMOVE_ITEM', 'POST', '/items/remove', (index) => ({ index })),
 };
 
-const submitItem = () => (dispatch, getState) => {
-  const { itemInput } = getState();
-  if (itemInput === '') {
-    return;
-  }
-
-  dispatch(http.addItem.fetch(itemInput));
-};
-
-export { submitItem, updateItemInput, http };
+export default actions;
