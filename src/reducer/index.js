@@ -1,7 +1,5 @@
-import './index.css';
-
 import _ from 'lodash';
-import actions from './actions';
+import actions from '../action';
 import { handleActions } from 'redux-actions';
 
 const defaultState = {
@@ -51,7 +49,13 @@ const reducer = handleActions(
     [actions.removeItemPending]: (state, { payload }) => ({
       ...state,
       items: state.items.map(
-        (item) => (item.id === payload.request.id ? { ...item, removingInProgress: true } : item),
+        (item) =>
+          item.id === payload.request.id
+            ? {
+                ...item,
+                removingInProgress: true,
+              }
+            : item,
       ),
     }),
     [actions.removeItemSuccess]: (state, { payload }) => ({

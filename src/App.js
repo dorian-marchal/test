@@ -12,7 +12,7 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    // Prevent losing focus when submiting an item.
+    // Prevent losing focus when submitting an item.
     if (prevProps.addItemInProgress && !this.props.addItemInProgress) {
       this.input.focus();
     }
@@ -28,7 +28,6 @@ class App extends Component {
       onSubmitItem,
       onInputChange,
     } = this.props;
-    // @FIXME disable buttons on click.
     return (
       <div className="App">
         {items.length === 0 ? "There's no item in the list, please add one. :)" : ''}

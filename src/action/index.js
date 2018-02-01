@@ -1,7 +1,7 @@
 import { createAction, createActions } from 'redux-actions';
 
 import _ from 'lodash';
-import logger from './logger';
+import logger from '../logger';
 
 const serverBaseUrl = 'http://localhost:3001';
 
