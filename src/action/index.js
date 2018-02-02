@@ -1,26 +1,30 @@
 import { createAction, createActions } from 'redux-actions';
-
 import _ from 'lodash';
 import logger from '../logger';
 
 const serverBaseUrl = 'http://localhost:3001';
 
 // @FIXME doc
-const createFetchActions = (type, method, path, makeParams = () => ({})) => {
-  const pending = createAction(`${type}_PENDING`, (requestBody) => ({ request: requestBody }));
-  const success = createAction(`${type}_SUCCESS`, (responseBody, requestBody) => ({
-    response: responseBody,
-    request: requestBody,
-  }));
-  const error = createAction(`${type}_ERROR`);
-
+const createFetchActions = ({
+  type,
+  method = 'GET',
+  path,
+  createBody = _.noop,
+  // @FIXME doc takes requestBody/[responseBody]
+  onPending = _.noop,
+  onSuccess = _.noop,
+  onError = _.noop,
+}) => {
+  const pending = createAction(`${type}_PENDING`, onPending);
+  const success = createAction(`${type}_SUCCESS`, onSuccess);
+  const error = createAction(`${type}_ERROR`, onError);
   return {
     [pending]: pending,
     [success]: success,
     [error]: error,
     [type]: (...args) =>
       async function(dispatch) {
-        const requestBody = makeParams(...args);
+        const requestBody = createBody(...args);
 
         dispatch(pending(requestBody));
 
@@ -28,17 +32,13 @@ const createFetchActions = (type, method, path, makeParams = () => ({})) => {
         try {
           const response = await fetch(`${serverBaseUrl}${path}`, {
             method,
-            body: method === 'POST' ? JSON.stringify(requestBody) : undefined,
+            body: requestBody ? JSON.stringify(requestBody) : undefined,
             headers: { 'Content-Type': 'application/json' },
           });
-          if (response.status < 300) {
-            // @FIXME How to handle this?
-            if (response.headers.get('Content-Type').match(/application\/json/)) {
-              responseBody = await response.json();
-            } else {
-              responseBody = await response.text();
-            }
-          } else {
+          if (response.headers.get('Content-Type').match(/application\/json/)) {
+            responseBody = await response.json();
+          }
+          if (response.status >= 300) {
             throw response;
           }
         } catch (e) {
@@ -47,10 +47,7 @@ const createFetchActions = (type, method, path, makeParams = () => ({})) => {
           return;
         }
 
-        // @FIXME Doesn't always receive something.
-        // @FIXME What if I want to receive something else?
-        // @FIXME This looks weird...
-        dispatch(success(responseBody, requestBody));
+        dispatch(success(requestBody, responseBody));
       },
   };
 };
@@ -61,16 +58,35 @@ const actions = _.mapKeys(
       UPDATE_ITEM_INPUT: (input) => ({ input }),
     }),
     SUBMIT_ITEM: () => (dispatch, getState) => {
-      const { itemInput, addingItem } = getState();
-      if (addingItem || itemInput === '') {
+      const { itemInput, addItemInProgress } = getState();
+      if (addItemInProgress || itemInput === '') {
         return;
       }
 
       dispatch(actions.addItem(itemInput));
     },
-    ...createFetchActions('FETCH_ITEMS', 'GET', '/items'),
-    ...createFetchActions('ADD_ITEM', 'POST', '/items/add', (item) => ({ item })),
-    ...createFetchActions('REMOVE_ITEM', 'POST', '/items/remove', (id) => ({ id })),
+    ...createFetchActions({
+      type: 'FETCH_ITEMS',
+      path: '/items',
+      // @FIXME Validate?
+      onSuccess: (requestBody, responseBody) => ({ items: responseBody }),
+      // @FIXME Errors, replace _.noop with _.identity?
+    }),
+    ...createFetchActions({
+      type: 'ADD_ITEM',
+      method: 'POST',
+      path: '/items/add',
+      createBody: (item) => ({ item }),
+      onSuccess: (requestBody, responseBody) => ({ item: responseBody }),
+    }),
+    ...createFetchActions({
+      type: 'REMOVE_ITEM',
+      method: 'POST',
+      path: '/items/remove',
+      createBody: (id) => ({ id }),
+      onPending: (requestBody) => ({ id: requestBody.id }),
+      onSuccess: (requestBody) => ({ id: requestBody.id }),
+    }),
   },
   (action, key) => _.camelCase(key),
 );

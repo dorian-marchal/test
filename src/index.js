@@ -8,12 +8,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import reducer from './reducer';
 import thunk from 'redux-thunk';
 
-// @FIXME Better project structure.
-
 // @FIXME Use combineReducers https://redux.js.org/docs/api/combineReducers.html
-// @FIXME Global access.
-// @FIXME Move reducer and action same place
-// @FIXME Manage errors.
 const store = createStore(reducer, composeWithDevTools(applyMiddleware(thunk)));
 
 // @FIXME Split presentational & container components.

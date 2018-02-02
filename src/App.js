@@ -2,7 +2,7 @@ import './App.css';
 
 import React, { Component } from 'react';
 
-import actions from './actions';
+import actions from './action';
 import { connect } from 'react-redux';
 
 class App extends Component {

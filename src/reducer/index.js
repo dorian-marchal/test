@@ -6,7 +6,6 @@ const defaultState = {
   itemInput: '',
   fetchItemsInProgress: false,
   addItemInProgress: false,
-  // @FIXME dispatch errors with noty.
   errorMessage: null,
   items: [],
 };
@@ -21,7 +20,7 @@ const reducer = handleActions(
       ...state,
       fetchItemsInProgress: false,
       // @FIXME validate response in action creator.
-      items: payload.response,
+      items: payload.items,
     }),
     [actions.fetchItemsError]: (state) => ({
       ...state,
@@ -38,7 +37,7 @@ const reducer = handleActions(
       itemInput: '',
       addItemInProgress: false,
       // @FIXME validate in creator.
-      items: [...state.items, payload.response],
+      items: [...state.items, payload.item],
     }),
     [actions.addItemError]: (state) => ({
       ...state,
@@ -50,7 +49,7 @@ const reducer = handleActions(
       ...state,
       items: state.items.map(
         (item) =>
-          item.id === payload.request.id
+          item.id === payload.id
             ? {
                 ...item,
                 removingInProgress: true,
@@ -60,7 +59,7 @@ const reducer = handleActions(
     }),
     [actions.removeItemSuccess]: (state, { payload }) => ({
       ...state,
-      items: _.reject(state.items, (item) => item.id === payload.request.id),
+      items: _.reject(state.items, (item) => item.id === payload.id),
     }),
     [actions.removeItemError]: (state) => ({
       ...state,
