@@ -19,7 +19,6 @@ const reducer = handleActions(
     [actions.fetchItemsSuccess]: (state, { payload }) => ({
       ...state,
       fetchItemsInProgress: false,
-      // @FIXME validate response in action creator.
       items: payload.items,
     }),
     [actions.fetchItemsError]: (state) => ({
@@ -27,7 +26,6 @@ const reducer = handleActions(
       fetchItemsInProgress: false,
       errorMessage: 'Impossible de récupérer les produits.',
     }),
-    // @FIXME
     [actions.addItemPending]: (state) => ({
       ...state,
       addItemInProgress: true,
@@ -36,7 +34,6 @@ const reducer = handleActions(
       ...state,
       itemInput: '',
       addItemInProgress: false,
-      // @FIXME validate in creator.
       items: [...state.items, payload.item],
     }),
     [actions.addItemError]: (state) => ({
@@ -44,26 +41,22 @@ const reducer = handleActions(
       addItemInProgress: false,
       errorMessage: "Le produit n'a pas été ajouté.",
     }),
-    // @FIXME
     [actions.removeItemPending]: (state, { payload }) => ({
       ...state,
       items: state.items.map(
-        (item) =>
-          item.id === payload.id
-            ? {
-                ...item,
-                removingInProgress: true,
-              }
-            : item,
+        (item) => (item.id === payload.id ? { ...item, removingInProgress: true } : item),
       ),
     }),
     [actions.removeItemSuccess]: (state, { payload }) => ({
       ...state,
       items: _.reject(state.items, (item) => item.id === payload.id),
     }),
-    [actions.removeItemError]: (state) => ({
+    [actions.removeItemError]: (state, { payload }) => ({
       ...state,
       errorMessage: "Le produit n'a pas été supprimé.",
+      items: state.items.map(
+        (item) => (item.id === payload.id ? { ...item, removingInProgress: false } : item),
+      ),
     }),
     [actions.updateItemInput]: (state, { payload }) => ({
       ...state,
