@@ -14,7 +14,7 @@ const makeGenerator = function*() {
 
 const gen = makeGenerator();
 
-gen.next();
-gen.next();
-gen.next();
-gen.next();
+console.log("→ ", gen.next(), "\n");
+console.log("→ ", gen.next(), "\n");
+console.log("→ ", gen.next(), "\n");
+console.log("→ ", gen.next(), "\n");
