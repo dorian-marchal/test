@@ -1,17 +1,8 @@
 const fetch = require("node-fetch");
 
-const makeGenerator = function*() {
-  const res = yield fetch("https://api.jvc.gg/tvChannel/1");
-  return res;
+const getTvChannel = async function(id) {
+  const res = await fetch(`https://api.jvc.gg/tvChannel/${id}`);
+  return await res.json();
 };
 
-const gen = makeGenerator();
-
-const { value } = gen.next();
-console.log("→ ", value, "\n");
-
-value
-  .then(res => res.text())
-  .then(text => {
-    console.log(gen.next(text));
-  });
+getTvChannel(1).then(console.log);
