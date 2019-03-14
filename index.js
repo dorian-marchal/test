@@ -1,9 +1,9 @@
 const makeGenerator = function*() {
   console.log("before `yield`");
 
-  yield "bar";
+  const foo = yield "bar";
 
-  console.log("after first `yield`.");
+  console.log("after first `yield`.", { foo });
 
   yield { foo: null };
 
@@ -15,6 +15,6 @@ const makeGenerator = function*() {
 const gen = makeGenerator();
 
 console.log("→ ", gen.next(), "\n");
-console.log("→ ", gen.next(), "\n");
+console.log("→ ", gen.next(42), "\n");
 console.log("→ ", gen.next(), "\n");
 console.log("→ ", gen.next(), "\n");
